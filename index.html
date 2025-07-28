@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UniqueStays - Extraordinary Places to Stay</title>
+    <style>
+      /* Fix for Leaflet marker icons */
+      .leaflet-default-icon-path {
+        background-image: url("https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png");
+      }
+      
+      .leaflet-default-shadow-path {
+        background-image: url("https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png");
+      }
+      
+      /* Custom styling for map popups */
+      .leaflet-popup-content-wrapper {
+        padding: 0;
+        overflow: hidden;
+      }
+      
+      .leaflet-popup-content {
+        margin: 0;
+        padding: 10px;
+      }
+      
+      .stay-popup .leaflet-popup-content-wrapper {
+        border-radius: 12px;
+      }
+      
+      /* Custom marker cluster styling */
+      .custom-marker-cluster {
+        background: none;
+        border: none;
+      }
+      
+      .cluster-icon {
+        width: 40px;
+        height: 40px;
+        background-color: #e97441;
+        border-radius: 50%;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        border: 2px solid white;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
