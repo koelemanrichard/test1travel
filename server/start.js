@@ -6,9 +6,6 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 
-// Import routes
-const aiRoutes = require('./routes/aiRoutes');
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production';
@@ -31,7 +28,7 @@ const authLimiter = rateLimit({
   max: 5 // limit each IP to 5 auth requests per windowMs
 });
 
-// Mock database for demonstration (since Supabase setup is having issues)
+// Mock database for demonstration
 const mockAdmins = [
   {
     id: 'admin-1',
@@ -106,6 +103,7 @@ const mockBookings = [
 const authenticateAdmin = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
+    
     if (!token) {
       return res.status(401).json({ message: 'Access denied. No token provided.' });
     }
@@ -114,6 +112,7 @@ const authenticateAdmin = async (req, res, next) => {
     
     // Find admin in mock database
     const admin = mockAdmins.find(a => a.id === decoded.adminId && a.status === 'active');
+
     if (!admin) {
       return res.status(401).json({ message: 'Invalid token.' });
     }
@@ -137,36 +136,35 @@ app.post('/api/admin/login', authLimiter, [
     }
 
     const { email, password } = req.body;
-    console.log('Login attempt:', { email, password: '***' });
-    
+
     // Find admin user
     const admin = mockAdmins.find(a => a.email === email && a.status === 'active');
+
     if (!admin) {
-      console.log('Admin not found for email:', email);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    
-    console.log('Admin found, verifying password...');
-    
+
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, admin.password);
-    console.log('Password valid:', isPasswordValid);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    
+
     // Generate JWT token
     const token = jwt.sign(
       { adminId: admin.id, email: admin.email, role: admin.role },
       JWT_SECRET,
       { expiresIn: '24h' }
     );
-    
+
     // Remove password from response
     const { password: _, ...adminData } = admin;
-    
-    console.log('Login successful for:', email);
-    res.json({ token, admin: adminData, message: 'Login successful' });
+
+    res.json({
+      token,
+      admin: adminData,
+      message: 'Login successful'
+    });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -183,14 +181,38 @@ app.get('/api/admin/verify', authenticateAdmin, (req, res) => {
 app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
   try {
     const stats = {
-      properties: { total: mockProperties.length, change: +12, trend: 'up' },
-      users: { total: mockUsers.length, change: +156, trend: 'up' },
-      bookings: { total: mockBookings.length, change: -23, trend: 'down' },
-      revenue: { total: 89750, change: +8920, trend: 'up' },
-      avgRating: { total: 4.8, change: +0.2, trend: 'up' },
-      views: { total: 15420, change: +2340, trend: 'up' }
+      properties: { 
+        total: mockProperties.length, 
+        change: +12, 
+        trend: 'up' 
+      },
+      users: { 
+        total: mockUsers.length, 
+        change: +156, 
+        trend: 'up' 
+      },
+      bookings: { 
+        total: mockBookings.length, 
+        change: -23, 
+        trend: 'down' 
+      },
+      revenue: { 
+        total: 89750, 
+        change: +8920, 
+        trend: 'up' 
+      },
+      avgRating: { 
+        total: 4.8, 
+        change: +0.2, 
+        trend: 'up' 
+      },
+      views: { 
+        total: 15420, 
+        change: +2340, 
+        trend: 'up' 
+      }
     };
-    
+
     res.json(stats);
   } catch (error) {
     console.error('Stats error:', error);
@@ -249,13 +271,13 @@ app.put('/api/admin/properties/:id', authenticateAdmin, async (req, res) => {
     if (propertyIndex === -1) {
       return res.status(404).json({ message: 'Property not found' });
     }
-    
+
     const updateData = {
       ...mockProperties[propertyIndex],
       ...req.body,
       updated_at: new Date().toISOString()
     };
-    
+
     mockProperties[propertyIndex] = updateData;
     res.json(updateData);
   } catch (error) {
@@ -273,7 +295,7 @@ app.delete('/api/admin/properties/:id', authenticateAdmin, async (req, res) => {
     if (propertyIndex === -1) {
       return res.status(404).json({ message: 'Property not found' });
     }
-    
+
     mockProperties.splice(propertyIndex, 1);
     res.json({ message: 'Property deleted successfully' });
   } catch (error) {
@@ -302,13 +324,10 @@ app.get('/api/admin/bookings', authenticateAdmin, async (req, res) => {
   }
 });
 
-// Mount AI Routes
-app.use('/api/ai', aiRoutes);
-
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({
-    status: 'OK',
+  res.json({ 
+    status: 'OK', 
     message: 'UniqueStays Admin Backend is running',
     timestamp: new Date().toISOString()
   });
@@ -330,8 +349,8 @@ app.listen(PORT, () => {
   console.log(`🚀 UniqueStays Admin Backend running on port ${PORT}`);
   console.log(`📊 Admin Dashboard: http://localhost:5173/#/admin/login`);
   console.log(`🔑 Default Admin Credentials:`);
-  console.log(`  Email: admin@uniquestays.com`);
-  console.log(`  Password: admin123!@#`);
+  console.log(`   Email: admin@uniquestays.com`);
+  console.log(`   Password: admin123!@#`);
   console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
   console.log(`📡 API Base URL: http://localhost:${PORT}/api`);
 });
